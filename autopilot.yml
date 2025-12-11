@@ -1,0 +1,16 @@
+# autopilot.yml
+
+project_dir: ./projects/sample-go-api
+
+goal: >
+  Go 言語でシンプルな REST API サーバーを実装し、
+  `go test ./...` がすべて成功する状態まで持っていくこと。
+  必要な README やサンプルリクエストも整備すること。
+
+max_hours: 24
+
+git:
+  auto_push: true          # AI に自動コミット & プッシュさせる前提
+  remote: origin           # リモート名
+  branch: main             # プッシュ先ブランチ
+  push_interval_steps: 1   # 「何ステップごとに push するか」(1 = ほぼ毎回)
