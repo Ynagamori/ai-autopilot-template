@@ -28,18 +28,17 @@ while true; do
 
   echo "[autopilot] launching codex CLI..." | tee -a "$LOG_FILE"
 
-  # TODO: あなたの環境の codex CLI に合わせて、以下のコマンドを変更してください。
-  # 例:
-  #   - プロジェクトルートとして $ROOT_DIR を指定
-  #   - エージェント設定として .codex/AGENT.md を読み込む
-  #
-  # 下の行はダミーです。実際の CLI 仕様に合わせて書き換えてください。
-  codex \
-    --project "$ROOT_DIR" \
-    --agent-file "$ROOT_DIR/.codex/AGENT.md" \
+  # 非対話モードの `codex exec` を使い、
+  # AGENT 設定は .codex/AGENTS.md から読み込む。
+  set +e
+  codex exec \
+    --full-auto \
+    --cd "$ROOT_DIR" \
+    - < "$ROOT_DIR/.codex/AGENTS.md" \
     2>&1 | tee -a "$LOG_FILE"
-
   EXIT_CODE=${PIPESTATUS[0]}
+  set -e
+
   echo "[autopilot] codex exited with code $EXIT_CODE" | tee -a "$LOG_FILE"
 
   # ログにクレジット系エラーっぽい文言がないか簡易チェック
@@ -49,6 +48,12 @@ while true; do
     continue
   fi
 
-  # それ以外はそのまま終了
-  exit "$EXIT_CODE"
+  # エラー終了コードの場合はそこで止める（人間の確認が必要な想定）
+  if [ "$EXIT_CODE" -ne 0 ]; then
+    echo "[autopilot] non-zero exit code ($EXIT_CODE), stopping watcher." | tee -a "$LOG_FILE"
+    exit "$EXIT_CODE"
+  fi
+
+  # 正常終了コード(0)の場合は、max_hours に達するまで次のループを継続する
+  echo "[autopilot] codex finished one iteration; restarting for next task..." | tee -a "$LOG_FILE"
 done
