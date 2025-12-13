@@ -8,6 +8,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
 MAX_HOURS=24
+MAX_ITERATIONS=${AUTOPILOT_MAX_ITERATIONS:-1}
 START_TS=$(date +%s)
 
 LOG_DIR="$ROOT_DIR/state"
@@ -17,7 +18,8 @@ LOG_FILE="$LOG_DIR/last_session.log"
 
 echo "[autopilot] claude session started at $(date)" | tee -a "$LOG_FILE"
 
-while true; do
+ITERATION=1
+while [ "$ITERATION" -le "$MAX_ITERATIONS" ]; do
   NOW=$(date +%s)
   ELAPSED=$(( (NOW - START_TS) / 3600 ))
 
@@ -45,8 +47,20 @@ while true; do
   if grep -qi "insufficient quota" "$LOG_FILE" || grep -qi "rate limit" "$LOG_FILE"; then
     echo "[autopilot] seems like credits exhausted or rate limited. sleeping 30min..." | tee -a "$LOG_FILE"
     sleep 1800
+
+    if [ "$ITERATION" -ge "$MAX_ITERATIONS" ]; then
+      echo "[autopilot] reached max iterations ($ITERATION/$MAX_ITERATIONS); stopping to save credits." | tee -a "$LOG_FILE"
+      exit "$EXIT_CODE"
+    fi
+
+    ITERATION=$((ITERATION + 1))
     continue
   fi
 
-  exit "$EXIT_CODE"
+  if [ "$ITERATION" -ge "$MAX_ITERATIONS" ]; then
+    echo "[autopilot] reached max iterations ($ITERATION/$MAX_ITERATIONS); stopping to save credits." | tee -a "$LOG_FILE"
+    exit "$EXIT_CODE"
+  fi
+
+  ITERATION=$((ITERATION + 1))
 done
