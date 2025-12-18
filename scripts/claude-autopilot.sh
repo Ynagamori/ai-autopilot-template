@@ -31,12 +31,12 @@ while true; do
   # TODO: あなたの環境の claude CLI に合わせて、以下のコマンドを変更してください。
   # 例:
   #   - プロジェクトルートとして $ROOT_DIR を指定
-  #   - エージェント設定として .claude/AGENT.md を読み込む
+  #   - エージェント設定として .claude/AGENTS.md を読み込む
   #
   # 下の行はダミーです。実際の CLI 仕様に合わせて書き換えてください。
   claude \
     --project "$ROOT_DIR" \
-    --agent-file "$ROOT_DIR/.claude/AGENT.md" \
+    --agent-file "$ROOT_DIR/.claude/AGENTS.md" \
     2>&1 | tee -a "$LOG_FILE"
 
   EXIT_CODE=${PIPESTATUS[0]}
