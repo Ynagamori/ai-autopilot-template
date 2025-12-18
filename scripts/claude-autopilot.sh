@@ -2,6 +2,10 @@
 set -euo pipefail
 
 # claude CLI 用 自律開発ウォッチャースクリプト
+# 依存: claude CLI がインストールされ、API キー設定（例: ANTHROPIC_API_KEY 環境変数）が済んでいること
+# 実行例:
+#   chmod +x scripts/claude-autopilot.sh
+#   ./scripts/claude-autopilot.sh
 # ※ 実際の claude CLI のオプションは各自の環境に合わせて修正してください。
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -31,12 +35,12 @@ while true; do
   # TODO: あなたの環境の claude CLI に合わせて、以下のコマンドを変更してください。
   # 例:
   #   - プロジェクトルートとして $ROOT_DIR を指定
-  #   - エージェント設定として .claude/AGENT.md を読み込む
+  #   - エージェント設定として .claude/CLAUDE.md を読み込む
   #
   # 下の行はダミーです。実際の CLI 仕様に合わせて書き換えてください。
   claude \
     --project "$ROOT_DIR" \
-    --agent-file "$ROOT_DIR/.claude/AGENT.md" \
+    --agent-file "$ROOT_DIR/.claude/CLAUDE.md" \
     2>&1 | tee -a "$LOG_FILE"
 
   EXIT_CODE=${PIPESTATUS[0]}

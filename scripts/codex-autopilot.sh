@@ -2,6 +2,10 @@
 set -euo pipefail
 
 # codex CLI 用 自律開発ウォッチャースクリプト
+# 依存: codex CLI がインストールされ、API キー設定（例: CODEX_API_KEY 環境変数や CLI 設定）が済んでいること
+# 実行例:
+#   chmod +x scripts/codex-autopilot.sh
+#   ./scripts/codex-autopilot.sh
 # ※ 実際の codex CLI のオプションは各自の環境に合わせて修正してください。
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
