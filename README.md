@@ -24,7 +24,7 @@
 
 ## 前提
 
-- codex CLI / claude CLI がローカルで使えること
+- codex CLI / claude CLI がローカルで使えること（詳細な前提条件と設定例は後述）
 - API キーや課金の設定は、それぞれの CLI ツール側で行うこと  
   （このリポジトリでは API キーは扱いません）
 
@@ -35,9 +35,9 @@
 ├─ README.md
 ├─ autopilot.yml              # ゴールや対象プロジェクトの設定
 ├─ .codex/
-│   └─ AGENT.md               # codex 用エージェントプロンプト
+│   └─ AGENTS.md              # codex 用エージェントプロンプト
 ├─ .claude/
-│   └─ AGENT.md               # claude 用エージェントプロンプト
+│   └─ CLAUDE.md              # claude 用エージェントプロンプト
 ├─ state/
 │   ├─ autopilot_state.md     # AI エージェントが自分で更新する進捗メモ
 │   └─ last_session.log       # スクリプトが吐くログ
@@ -46,3 +46,41 @@
 │   └─ claude-autopilot.sh    # claude 用ウォッチャースクリプト
 └─ projects/
     └─ README.md              # プロジェクト配置に関する説明
+
+## codex / claude CLI の前提
+
+- codex CLI / claude CLI がローカルで使えること
+- API キーや課金の設定は、それぞれの CLI ツール側で事前に済ませること  
+  - 例: 環境変数（`CODEX_API_KEY` / `ANTHROPIC_API_KEY` など）や CLI 独自の設定コマンドで認証する
+- `scripts/` 配下のシェルは実行権限を付与したうえで利用すること
+
+## ウォッチャースクリプトの実行例
+
+### codex-autopilot.sh
+
+1. codex CLI をインストールし、API キー設定（例: `export CODEX_API_KEY=...`）を済ませる
+2. プロジェクトルートで以下を実行
+
+```bash
+./scripts/codex-autopilot.sh
+```
+
+### claude-autopilot.sh
+
+1. claude CLI をインストールし、API キー設定（例: `export ANTHROPIC_API_KEY=...`）を済ませる
+2. プロジェクトルートで以下を実行
+
+```bash
+./scripts/claude-autopilot.sh
+```
+
+## サンプルプロジェクトの起動 / テスト
+
+- `autopilot.yml` では `projects/sample-go-api` を対象とした Go REST API をゴールに設定しています
+- プロジェクトを `projects/sample-go-api` に用意したら、以下のように実行・検証できます
+
+```bash
+cd projects/sample-go-api
+go run ./...
+go test ./...
+```
