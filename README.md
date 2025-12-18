@@ -46,3 +46,23 @@
 │   └─ claude-autopilot.sh    # claude 用ウォッチャースクリプト
 └─ projects/
     └─ README.md              # プロジェクト配置に関する説明
+
+## プロジェクト管理のガイドライン
+
+- すべてのプロジェクトは `projects/<project-name>/` に配置し、名前は **kebab-case** で統一します。
+- `autopilot.yml` の `project_dir` には、対象プロジェクトへの **相対パス**（例: `./projects/sample-go-api`）を設定します。
+- 各プロジェクト配下に `README.md` を用意し、セットアップ手順とテスト方法を必ず記載してください。詳しくは `projects/README.md` を参照。
+
+### 追加済みサンプルプロジェクト
+
+- `projects/sample-go-api`: Go 製のシンプルな REST API。`GET /health` と `POST /echo` を提供します。
+- テスト実行例: `cd projects/sample-go-api && go test ./...`
+
+### 将来プロジェクトを増やす際の構成例
+
+```txt
+projects/
+├─ sample-go-api/          # Go の REST API サンプル
+├─ next-frontend/          # Next.js/React フロントエンド
+└─ data-pipeline/          # Python 製バッチや ETL
+```
