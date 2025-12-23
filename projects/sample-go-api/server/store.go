@@ -93,3 +93,38 @@ func (s *TaskStore) Complete(id int) (Task, error) {
 
 	return task, nil
 }
+
+// Update updates the title of a task.
+func (s *TaskStore) Update(id int, title string) (Task, error) {
+	title = strings.TrimSpace(title)
+	if title == "" {
+		return Task{}, errors.New("title is required")
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	task, ok := s.tasks[id]
+	if !ok {
+		return Task{}, ErrTaskNotFound
+	}
+
+	task.Title = title
+	s.tasks[id] = task
+
+	return task, nil
+}
+
+// Delete removes a task from the store.
+func (s *TaskStore) Delete(id int) (Task, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	task, ok := s.tasks[id]
+	if !ok {
+		return Task{}, ErrTaskNotFound
+	}
+
+	delete(s.tasks, id)
+	return task, nil
+}

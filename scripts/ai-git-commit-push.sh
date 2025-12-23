@@ -8,7 +8,9 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
 REMOTE="${AUTOPILOT_GIT_REMOTE:-origin}"
-BRANCH="${AUTOPILOT_GIT_BRANCH:-main}"
+DEFAULT_BRANCH="${AUTOPILOT_GIT_BRANCH:-main}"
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+BRANCH="$DEFAULT_BRANCH"
 
 COMMIT_MSG="${1:-ai: autopilot update}"
 
@@ -26,6 +28,11 @@ git commit -m "$COMMIT_MSG" || {
   echo "[ai-git] commit failed (maybe no changes?)."
   exit 0
 }
+
+if ! git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+  echo "[ai-git] branch ${BRANCH} not found locally; using ${CURRENT_BRANCH}."
+  BRANCH="$CURRENT_BRANCH"
+fi
 
 echo "[ai-git] pushing to ${REMOTE} ${BRANCH}..."
 git push "$REMOTE" "$BRANCH"
