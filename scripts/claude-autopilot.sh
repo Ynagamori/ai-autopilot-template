@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # claude CLI 用 自律開発ウォッチャースクリプト
-# ※ 実際の claude CLI のオプションは各自の環境に合わせて修正してください。
+# Claude CLI の自動エージェント実行に合わせたオプションを指定する。
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -28,18 +28,16 @@ while true; do
 
   echo "[autopilot] launching claude CLI..." | tee -a "$LOG_FILE"
 
-  # TODO: あなたの環境の claude CLI に合わせて、以下のコマンドを変更してください。
-  # 例:
-  #   - プロジェクトルートとして $ROOT_DIR を指定
-  #   - エージェント設定として .claude/AGENT.md を読み込む
-  #
-  # 下の行はダミーです。実際の CLI 仕様に合わせて書き換えてください。
-  claude \
-    --project "$ROOT_DIR" \
-    --agent-file "$ROOT_DIR/.claude/AGENT.md" \
+  # 非対話モードの `claude run` を使い、
+  # エージェント設定は .claude/CLAUDE.md から読み込む。
+  set +e
+  claude run \
+    --project-dir "$ROOT_DIR" \
+    --agent-file "$ROOT_DIR/.claude/CLAUDE.md" \
     2>&1 | tee -a "$LOG_FILE"
-
   EXIT_CODE=${PIPESTATUS[0]}
+  set -e
+
   echo "[autopilot] claude exited with code $EXIT_CODE" | tee -a "$LOG_FILE"
 
   if grep -qi "insufficient quota" "$LOG_FILE" || grep -qi "rate limit" "$LOG_FILE"; then
@@ -48,5 +46,10 @@ while true; do
     continue
   fi
 
-  exit "$EXIT_CODE"
+  if [ "$EXIT_CODE" -ne 0 ]; then
+    echo "[autopilot] non-zero exit code ($EXIT_CODE), stopping watcher." | tee -a "$LOG_FILE"
+    exit "$EXIT_CODE"
+  fi
+
+  echo "[autopilot] claude finished one iteration; restarting for next task..." | tee -a "$LOG_FILE"
 done

@@ -35,9 +35,9 @@
 ├─ README.md
 ├─ autopilot.yml              # ゴールや対象プロジェクトの設定
 ├─ .codex/
-│   └─ AGENT.md               # codex 用エージェントプロンプト
+│   └─ AGENTS.md              # codex 用エージェントプロンプト
 ├─ .claude/
-│   └─ AGENT.md               # claude 用エージェントプロンプト
+│   └─ CLAUDE.md              # claude 用エージェントプロンプト
 ├─ state/
 │   ├─ autopilot_state.md     # AI エージェントが自分で更新する進捗メモ
 │   └─ last_session.log       # スクリプトが吐くログ
