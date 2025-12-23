@@ -28,6 +28,8 @@
 - API キーや課金の設定は、それぞれの CLI ツール側で行うこと  
   （このリポジトリでは API キーは扱いません）
 
+codex CLI / claude CLI のどちらを使う場合も、`autopilot.yml` の `goal` と `project_dir`、および `.codex/AGENTS.md`（= `.claude/AGENTS.md`）に記載されたルールを読み込んで、同じゴールを共有します。
+
 ## ディレクトリ構成
 
 ```txt
@@ -35,9 +37,9 @@
 ├─ README.md
 ├─ autopilot.yml              # ゴールや対象プロジェクトの設定
 ├─ .codex/
-│   └─ AGENT.md               # codex 用エージェントプロンプト
+│   └─ AGENTS.md              # codex 用エージェントプロンプト
 ├─ .claude/
-│   └─ AGENT.md               # claude 用エージェントプロンプト
+│   └─ AGENTS.md              # claude 用エージェントプロンプト（内容は codex と同一）
 ├─ state/
 │   ├─ autopilot_state.md     # AI エージェントが自分で更新する進捗メモ
 │   └─ last_session.log       # スクリプトが吐くログ
@@ -46,3 +48,4 @@
 │   └─ claude-autopilot.sh    # claude 用ウォッチャースクリプト
 └─ projects/
     └─ README.md              # プロジェクト配置に関する説明
+```
