@@ -8,9 +8,32 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
 REMOTE="${AUTOPILOT_GIT_REMOTE:-origin}"
-BRANCH="${AUTOPILOT_GIT_BRANCH:-main}"
+
+TASK_NAME_RAW="${AUTOPILOT_TASK_NAME:-}"
+if [ -n "$TASK_NAME_RAW" ]; then
+  TASK_NAME=$(echo "$TASK_NAME_RAW" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g; s/--*/-/g; s/^-//; s/-$//')
+else
+  TASK_NAME=""
+fi
+
+DEFAULT_BRANCH="feature/autopilot"
+if [ -n "$TASK_NAME" ]; then
+  DEFAULT_BRANCH="feature/${TASK_NAME}"
+fi
+
+BRANCH="${AUTOPILOT_GIT_BRANCH:-$DEFAULT_BRANCH}"
 
 COMMIT_MSG="${1:-ai: autopilot update}"
+
+echo "[ai-git] ensuring branch $BRANCH exists..."
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
+  if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+    git checkout "$BRANCH"
+  else
+    git checkout -b "$BRANCH"
+  fi
+fi
 
 # 変更がなければ何もしない
 if git diff --quiet && git diff --cached --quiet; then
@@ -28,5 +51,5 @@ git commit -m "$COMMIT_MSG" || {
 }
 
 echo "[ai-git] pushing to ${REMOTE} ${BRANCH}..."
-git push "$REMOTE" "$BRANCH"
+git push -u "$REMOTE" "$BRANCH"
 echo "[ai-git] done."
