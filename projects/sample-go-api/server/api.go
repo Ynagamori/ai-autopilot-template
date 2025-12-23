@@ -38,6 +38,29 @@ func (a *API) tasksHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		tasks := a.store.List()
+		offset, hasOffset, err := parseOptionalInt(r, "offset")
+		if err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if offset < 0 {
+			writeError(w, http.StatusBadRequest, "offset must be zero or greater")
+			return
+		}
+
+		limit, hasLimit, err := parseOptionalInt(r, "limit")
+		if err != nil {
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		if hasLimit && limit < 0 {
+			writeError(w, http.StatusBadRequest, "limit must be zero or greater")
+			return
+		}
+
+		if hasOffset || hasLimit {
+			tasks = sliceTasks(tasks, offset, limit, hasLimit)
+		}
 		writeJSON(w, http.StatusOK, tasks)
 	case http.MethodPost:
 		var payload struct {
@@ -95,7 +118,82 @@ func (a *API) taskActionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(parts) == 1 && r.Method == http.MethodPatch {
+		var payload struct {
+			Title string `json:"title"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeError(w, http.StatusBadRequest, "invalid JSON payload")
+			return
+		}
+
+		task, err := a.store.Update(id, payload.Title)
+		if err != nil {
+			if errors.Is(err, ErrTaskNotFound) {
+				writeError(w, http.StatusNotFound, "task not found")
+				return
+			}
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		writeJSON(w, http.StatusOK, task)
+		return
+	}
+
+	if len(parts) == 1 && r.Method == http.MethodDelete {
+		task, err := a.store.Delete(id)
+		if err != nil {
+			if errors.Is(err, ErrTaskNotFound) {
+				writeError(w, http.StatusNotFound, "task not found")
+				return
+			}
+			writeError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
+		writeJSON(w, http.StatusOK, task)
+		return
+	}
+
 	writeError(w, http.StatusNotFound, fmt.Sprintf("no action for %s", r.URL.Path))
+}
+
+func parseOptionalInt(r *http.Request, key string) (int, bool, error) {
+	value := strings.TrimSpace(r.URL.Query().Get(key))
+	if value == "" {
+		return 0, false, nil
+	}
+
+	num, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, false, fmt.Errorf("%s must be an integer", key)
+	}
+
+	return num, true, nil
+}
+
+func sliceTasks(tasks []Task, offset, limit int, hasLimit bool) []Task {
+	if offset >= len(tasks) {
+		return []Task{}
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	end := len(tasks)
+	if hasLimit {
+		end = offset + limit
+		if limit <= 0 {
+			return []Task{}
+		}
+		if end > len(tasks) {
+			end = len(tasks)
+		}
+	}
+
+	return tasks[offset:end]
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {
